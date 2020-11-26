@@ -1,15 +1,25 @@
 <template>
-  <div>
-    <h1>TODO/APP</h1>
-    <input
-      class="input-todo"
-      v-model="newTodo"
-      @keydown.enter="addTodo()"
-      placeholder="Add a todo"
-    />
-    <ul class="todo-item" v-for="todo in todos" :key="todo.id">
-      <div>
-        <li @dblclick="edited = !edited" class="todo-item-label">
+  <div id="app">
+    <md-card>
+      <md-card-header>
+        <div class="md-title">Todo App</div>
+        <div class="md-subhead">by Carlos Scarpantonio</div>
+      </md-card-header>
+    </md-card>
+
+    <md-field>
+      <md-input
+        class="input-todo"
+        v-model="newTodo"
+        @keydown.enter="addTodo()"
+        placeholder="Add a todo"
+      ></md-input>
+    </md-field>
+
+    <div>
+      <!-- m-list actua como ul & m-list-item actua como li -->
+      <md-list v-for="todo in todos" :key="todo.id">
+        <md-list-item class="todo-item-label" @dblclick="edited = !edited">
           <span class="check-postiion">
             <input
               class="check"
@@ -20,18 +30,35 @@
             />
           </span>
 
-          <input
-            v-bind:class="{ edited: edited }"
-            @keydown.enter="edited = !edited"
-            type="text"
-            v-model="todo.label"
-            placeholder="edit todo here"
-          />
-          {{ todo.label }}
-          <button class="deleteBtn" @click="removeTodo(todo)">Delete</button>
-        </li>
-      </div>
-    </ul>
+          <!-- <md-field>
+            <span class="md-list-item-text">
+              <md-input
+                v-bind:class="{ edited: edited }"
+                @keydown.enter="edited = !edited"
+                type="text"
+                v-model="todo.label"
+                placeholder="edit todo here"
+              />{{ todo.label }}</span
+            >
+          </md-field> -->
+
+          <span class="md-list-item-text"
+            ><input
+              v-bind:class="{ edited: edited }"
+              @keydown.enter="edited = !edited"
+              type="text"
+              v-model="todo.label"
+              placeholder="edit todo here"
+            />
+            {{ todo.label }}</span
+          >
+
+          <md-button class="md-accent" @click="removeTodo(todo)"
+            ><md-icon>highlight_off</md-icon></md-button
+          >
+        </md-list-item>
+      </md-list>
+    </div>
   </div>
 </template>
 
@@ -73,7 +100,7 @@ export default {
 </script>
 
 <style>
-body {
+#app {
   margin: 100px;
   text-align: center;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -85,10 +112,10 @@ li {
 
 .input-todo {
   text-align: center;
-  border: solid 2px;
+  /* border: solid 2px;
   border-radius: 10px;
   height: 40px;
-  width: 250px;
+  width: 250px; */
 }
 
 .edited {
