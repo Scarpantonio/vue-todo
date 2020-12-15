@@ -1,140 +1,167 @@
+
 <template>
-  <div id="app">
+  <div>
     <md-card>
       <md-card-header>
-        <div class="md-title">Todo App</div>
-        <div class="md-subhead">by Carlos Scarpantonio</div>
+        <div class="md-title">
+          <img class="logo" src="../public/img/logo.png" alt="logo" />
+        </div>
       </md-card-header>
     </md-card>
 
     <md-field>
       <md-input
-        class="input-todo"
+        type="text"
+        class="todo-input"
+        placeholder="Add a todo here"
         v-model="newTodo"
-        @keydown.enter="addTodo()"
-        placeholder="Add a todo"
+        @keyup.enter="addTodo"
       ></md-input>
     </md-field>
 
-    <div>
-      <!-- m-list actua como ul & m-list-item actua como li -->
-      <md-list v-for="todo in todos" :key="todo.id">
-        <md-list-item class="todo-item-label" @dblclick="edited = !edited">
-          <span class="check-postiion">
-            <input
-              class="check"
-              type="checkbox"
-              id="checkbox"
-              v-model="checked"
-              @click="checkedBtn(todo)"
-            />
-          </span>
-
-          <!-- <md-field>
-            <span class="md-list-item-text">
-              <md-input
-                v-bind:class="{ edited: edited }"
-                @keydown.enter="edited = !edited"
-                type="text"
-                v-model="todo.label"
-                placeholder="edit todo here"
-              />{{ todo.label }}</span
-            >
-          </md-field> -->
-
-          <span class="md-list-item-text"
-            ><input
-              v-bind:class="{ edited: edited }"
-              @keydown.enter="edited = !edited"
-              type="text"
-              v-model="todo.label"
-              placeholder="edit todo here"
-            />
-            {{ todo.label }}</span
-          >
-
-          <md-button class="md-accent" @click="removeTodo(todo)"
-            ><md-icon>highlight_off</md-icon></md-button
-          >
-        </md-list-item>
-      </md-list>
+    <div v-for="(todo, index) in todosFiltered" :key="todo.id" class="todo-item">
+      <div class="todo-item-left">
+        <input type="checkbox" v-model="todo.completed" />
+        <div
+          v-if="!todo.editing"
+          @dblclick="editTodo(todo)"
+          class="todo-item-label"
+          :class="{ completed : todo.completed }"
+        >{{ todo.title }}</div>
+        <input
+          v-else
+          class="todo-item-edit"
+          type="text"
+          v-model="todo.title"
+          @blur="doneEdit(todo)"
+          @keyup.enter="doneEdit(todo)"
+          @keyup.esc="cancelEdit(todo)"
+          v-focus
+        />
+      </div>
+      <div class="remove-item" @click="removeTodo(index)">
+        <md-icon>highlight_off</md-icon>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  name: "todo-list",
   data() {
     return {
-      // this array are our todo items
-      todos: [],
       newTodo: "",
-      edited: true
+      beforeEditCache: "",
+      filter: "all",
+      todos: [
+        {
+          id: 1,
+          title: "To do Example",
+          completed: false,
+          editing: false
+        }
+      ]
     };
+  },
+  computed: {
+    // filtered to do.
+    todosFiltered() {
+      if (this.filter == "all") {
+        return this.todos;
+      }
+      return this.todos;
+    }
+  },
+  // disable edit mode when clicked. Customer directives to fix focus issue.
+  directives: {
+    focus: {
+      inserted: function(el) {
+        el.focus();
+      }
+    }
   },
   methods: {
     addTodo() {
+      if (this.newTodo.trim().length == 0) {
+        return;
+      }
       this.todos.push({
-        id: this.todos.length,
-        label: this.newTodo,
-        completed: false
+        id: this.idForTodo,
+        title: this.newTodo,
+        completed: false,
+        editing: false
       });
       this.newTodo = "";
-    },
-    removeTodo(todo) {
-      // aqui el index para saber donde esta ubicado el item que seleccionamos. el numero de index. para luego aplicar splice para q lo elimine. cuando le damos click aqui arriba agarra el todo y lo mete dentro de la funcion.
-      var index = this.todos.indexOf(todo);
-      this.todos.splice(index, 1);
-    },
-    checkedBtn(todo) {
-      var index = this.todos.indexOf(todo);
-      this.todos.splice(index, 1);
+      this.idForTodo++;
     },
     editTodo(todo) {
-      alert(todo);
-      // todo.edited = true;
-      // this.todos.edited = true;
+      this.beforeEditCache = todo.title;
+      todo.editing = true;
+    },
+    // disable edit mode when clicked.
+    doneEdit(todo) {
+      if (todo.title.trim() == "") {
+        todo.title = this.beforeEditCache;
+      }
+      todo.editing = false;
+    },
+    cancelEdit(todo) {
+      todo.title = this.beforeEditCache;
+      todo.editing = false;
+    },
+    removeTodo(index) {
+      this.todos.splice(index, 1);
     }
   }
 };
 </script>
 
-<style>
-#app {
-  margin: 100px;
+<style >
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;800&family=Raleway&display=swap");
+
+.logo {
+  width: 100%;
+  max-width: 100px;
+}
+
+* {
   text-align: center;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
-li {
-  list-style-type: none;
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 100px;
+  margin-right: 100px;
 }
-
-.input-todo {
-  text-align: center;
-  /* border: solid 2px;
-  border-radius: 10px;
-  height: 40px;
-  width: 250px; */
+.remove-item {
+  cursor: pointer;
+  margin-left: auto;
+  color: lightgreen;
 }
-
-.edited {
-  display: none;
+.todo-item-left {
+  display: flex;
+  align-items: center;
 }
-
-.check {
-  margin-right: 10px;
+.todo-item-label {
+  padding: 10px;
+  border: 1px solid white;
+  /* margin-left: 12px; */
 }
-
-/* check postion/desing */
-.check-postiion {
-  margin-right: 30px;
+.todo-item-edit {
+  font-size: 16px;
+  color: #2c3e50;
+  margin-left: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
 }
-
-.deleteBtn {
-  margin-left: 10px;
+.completed {
+  text-decoration: line-through;
+  color: grey;
 }
 </style>
-
-// Ver el video acerca de la lista de todo para poner la funcion de que no se
-pueda agregar info si el input esta vacio, .
